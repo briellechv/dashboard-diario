@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard Diário</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; padding: 2rem; }
+    h1 { text-align: center; font-size: 1.8rem; margin-bottom: 0.5rem; }
+    .hora { text-align: center; color: #94a3b8; margin-bottom: 2rem; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .card { background: #1e293b; border-radius: 12px; padding: 1.5rem; border: 1px solid #334155; }
+    .card h2 { font-size: 0.9rem; color: #94a3b8; margin-bottom: 0.5rem; }
+    .card .valor { font-size: 2rem; font-weight: bold; }
+    .card .sub { font-size: 0.85rem; color: #94a3b8; margin-top: 0.3rem; }
+    .verde { color: #4ade80; }
+    .vermelho { color: #f87171; }
+    .previsao, .noticias { background: #1e293b; border-radius: 12px; padding: 1.5rem; border: 1px solid #334155; margin-bottom: 1.5rem; }
+    .previsao h2, .noticias h2 { margin-bottom: 1rem; color: #94a3b8; font-size: 0.9rem; }
+    .previsao-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 0.5rem; }
+    .dia-card { background: #0f172a; border-radius: 8px; padding: 0.75rem; text-align: center; }
+    .dia-card .data { font-size: 0.75rem; color: #94a3b8; }
+    .dia-card .temps { font-size: 0.9rem; margin-top: 0.3rem; }
+    .noticia { padding: 0.75rem 0; border-bottom: 1px solid #334155; }
+    .noticia:last-child { border-bottom: none; }
+    .noticia .fonte { font-size: 0.75rem; color: #60a5fa; margin-bottom: 0.2rem; }
+    .noticia .titulo { font-size: 0.9rem; }
+    .loading { text-align: center; padding: 3rem; color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <h1>📋 Dashboard Diário</h1>
+  <p class="hora" id="hora"></p>
+  <div id="conteudo"><p class="loading">⏳ Carregando dados...</p></div>
+
+  <script>
+    document.getElementById("hora").textContent = new Date().toLocaleString("pt-BR");
+
+    async function carregar() {
+      const res = await fetch("/dados");
+      const { clima, dolar, noticias, bitcoin } = await res.json();
+
+      const varDolar = parseFloat(dolar.variacao);
+      const varBtc = parseFloat(bitcoin.variacao);
+
+      document.getElementById("conteudo").innerHTML = `
+        <div class="cards">
+          <div class="card">
+            <h2>🌤️ CLIMA — Belém/PA</h2>
+            <div class="valor">${clima.temperatura}°C</div>
+            <div class="sub">Vento: ${clima.vento} km/h</div>
+          </div>
+          <div class="card">
+            <h2>💵 DÓLAR (USD → BRL)</h2>
+            <div class="valor">R$ ${dolar.compra}</div>
+            <div class="sub ${varDolar >= 0 ? 'verde' : 'vermelho'}">
+              ${varDolar >= 0 ? '▲' : '▼'} ${dolar.variacao}% hoje
+            </div>
+          </div>
+          <div class="card">
+            <h2>₿ BITCOIN (BTC → BRL)</h2>
+            <div class="valor" style="font-size:1.3rem">${bitcoin.preco}</div>
+            <div class="sub ${varBtc >= 0 ? 'verde' : 'vermelho'}">
+              ${varBtc >= 0 ? '▲' : '▼'} ${bitcoin.variacao}% hoje
+            </div>
+          </div>
+        </div>
+
+        <div class="previsao">
+          <h2>📅 PREVISÃO 7 DIAS</h2>
+          <div class="previsao-grid">
+            ${clima.previsao.map(d => `
+              <div class="dia-card">
+                <div class="data">${d.dia}</div>
+                <div class="temps">🔴 ${d.max}° / 🔵 ${d.min}°</div>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+
+        <div class="noticias">
+          <h2>📰 TOP NOTÍCIAS DO BRASIL</h2>
+          ${noticias.map(n => `
+            <div class="noticia">
+              <div class="fonte">${n.fonte}</div>
+              <div class="titulo">${n.titulo}</div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    carregar();
+  </script>
+</body>
+</html>

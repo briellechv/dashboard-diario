@@ -1,0 +1,15 @@
+{
+  "name": "dashboard-diario",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.0",
+    "express": "^5.2.1",
+    "node-cron": "^4.5.0",
+    "node-fetch": "^3.0.0"
+  }
+}
