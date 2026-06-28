@@ -11,6 +11,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 app.use(express.static(__dirname));
 
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "dashboard.html"));
+});
+
 // Rota que retorna os dados em JSON para a página web
 app.get("/dados", async (req, res) => {
   try {
